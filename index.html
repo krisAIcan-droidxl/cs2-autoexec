@@ -34,11 +34,17 @@
     .modal .box{width:100%;max-width:420px;background:var(--card);border:1px solid #1d2633;border-radius:14px;padding:16px}
     /* Landing */
     .landing{min-height:80vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:32px}
-  </style>
+#topbar{display:none}
+#app{display:none}
+body.authed #topbar{display:block}
+body.authed #app{display:block}
+body.authed #landing{display:none}
+ 
+ </style>
 </head>
 <body>
   <header>
-    <div class="wrap" style="display:flex;align-items:center;gap:14px;justify-content:space-between">
+    <div class="wrap" <header id="topbar">>
       <div>
         <h1>CS2 Autoexec Configurator</h1>
         <div class="hint">Lav og redigér din <span class="chip">autoexec.cfg</span> uden at åbne spillet.</div>
@@ -433,14 +439,14 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZocmhwYW5wc2ZocXRwaXRrd3Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMjQ2NjMsImV4cCI6MjA3MzgwMDY2M30.byKWY3wd1I_7XVEn4BzZGUmSxlte_ewlCFFh8YLIy9E';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function updateAuthUI(){
-      const { data:{ user } } = await sb.auth.getUser();
-      const loggedIn = !!user;
-      $('btn-auth').style.display = loggedIn ? 'none' : '';
-      $('btn-logout').style.display = loggedIn ? '' : 'none';
-      show('landing', !loggedIn);
-      show('app', loggedIn);
-    }
+   async function updateAuthUI(){
+  const { data:{ user } } = await sb.auth.getUser();
+  const loggedIn = !!user;
+  document.body.classList.toggle('authed', loggedIn);
+  $('btn-auth').style.display = loggedIn ? 'none' : '';
+  $('btn-logout').style.display = loggedIn ? '' : 'none';
+}
+
 
     async function saveCloud(){
       const cfg = generateCfg();
