@@ -213,65 +213,65 @@
 
     // --------- Felter ---------
     const fields = [
-      // --- Presets (ændr/udvid som du vil) ---
-const PRESETS = {
-  "Clean – lille crosshair": {
-    dpi: 800, sensitivity: 1.0, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 2.5, ch_thickness: 0.8, ch_gap: -2, ch_alpha: 255,
-    ch_r: 0, ch_g: 255, ch_b: 170, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
-    volume: 0.4, voice_enable: 1
-  },
-  "Dot – minimal": {
-    dpi: 800, sensitivity: 1.1, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 1, ch_thickness: 0, ch_gap: -3, ch_alpha: 255,
-    ch_r: 255, ch_g: 255, ch_b: 255, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 1,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.02,
-    volume: 0.4, voice_enable: 1
-  },
-  "Classic – større outline": {
-    dpi: 800, sensitivity: 0.9, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 3, ch_thickness: 1, ch_gap: -1, ch_alpha: 255,
-    ch_r: 0, ch_g: 255, ch_b: 0, ch_outline: 1, ch_outline_thickness: 2, ch_dot: 0,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
-    volume: 0.5, voice_enable: 1
-  },
-  "Valve MM – 64 tick": {
-    dpi: 800, sensitivity: 1.0, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 2.5, ch_thickness: 0.8, ch_gap: -2, ch_alpha: 255,
-    ch_r: 0, ch_g: 255, ch_b: 170, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 262144, cmdrate: 64, updaterate: 64, mixahead: 0.03,
-    volume: 0.4, voice_enable: 1
-  }
-};
-
-function populatePresets(){
-  const sel = $('preset-select');
-  sel.innerHTML = '';
-  Object.keys(PRESETS).forEach(name=>{
-    const opt = document.createElement('option');
-    opt.value = name; opt.textContent = name;
-    sel.appendChild(opt);
-  });
-  // vælg første som default
-  if(sel.options.length) sel.selectedIndex = 0;
-}
-
-function applyPreset(name){
-  const p = PRESETS[name];
-  if(!p) return;
-  Object.entries(p).forEach(([k,v])=>{
-    if($(k) !== null) $(k).value = v;
-  });
-  updateEdpi(); saveState(); generateCfg();
-}
-
       'dpi','sensitivity','zoom_sens','m_rawinput','m_mouseaccel','ch_size','ch_thickness','ch_gap','ch_alpha','ch_r','ch_g','ch_b','ch_outline','ch_outline_thickness','ch_dot','vm_fov','vm_x','vm_y','vm_z','rate','cmdrate','updaterate','mixahead','volume','voice_enable','bind_jumpthrow','bind_quickswitch','custom'
     ];
+
+    // --- Presets (ændr/udvid som du vil) ---
+    const PRESETS = {
+      "Clean – lille crosshair": {
+        dpi: 800, sensitivity: 1.0, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
+        ch_size: 2.5, ch_thickness: 0.8, ch_gap: -2, ch_alpha: 255,
+        ch_r: 0, ch_g: 255, ch_b: 170, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
+        vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
+        rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
+        volume: 0.4, voice_enable: 1
+      },
+      "Dot – minimal": {
+        dpi: 800, sensitivity: 1.1, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
+        ch_size: 1, ch_thickness: 0, ch_gap: -3, ch_alpha: 255,
+        ch_r: 255, ch_g: 255, ch_b: 255, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 1,
+        vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
+        rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.02,
+        volume: 0.4, voice_enable: 1
+      },
+      "Classic – større outline": {
+        dpi: 800, sensitivity: 0.9, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
+        ch_size: 3, ch_thickness: 1, ch_gap: -1, ch_alpha: 255,
+        ch_r: 0, ch_g: 255, ch_b: 0, ch_outline: 1, ch_outline_thickness: 2, ch_dot: 0,
+        vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
+        rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
+        volume: 0.5, voice_enable: 1
+      },
+      "Valve MM – 64 tick": {
+        dpi: 800, sensitivity: 1.0, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
+        ch_size: 2.5, ch_thickness: 0.8, ch_gap: -2, ch_alpha: 255,
+        ch_r: 0, ch_g: 255, ch_b: 170, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
+        vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
+        rate: 262144, cmdrate: 64, updaterate: 64, mixahead: 0.03,
+        volume: 0.4, voice_enable: 1
+      }
+    };
+
+    function populatePresets(){
+      const sel = $('preset-select');
+      sel.innerHTML = '';
+      Object.keys(PRESETS).forEach(name=>{
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        sel.appendChild(opt);
+      });
+      // vælg første som default
+      if(sel.options.length) sel.selectedIndex = 0;
+    }
+
+    function applyPreset(name){
+      const p = PRESETS[name];
+      if(!p) return;
+      Object.entries(p).forEach(([k,v])=>{
+        if($(k) !== null) $(k).value = v;
+      });
+      updateEdpi(); saveState(); generateCfg();
+    }
 
     function loadState(){
       const raw = localStorage.getItem('cs2_cfg_state');
