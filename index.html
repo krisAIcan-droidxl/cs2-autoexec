@@ -18,77 +18,45 @@
     label{font-size:12px;color:var(--sub);display:block;margin-bottom:6px}
     input, select, textarea{width:100%;background:#0e1520;border:1px solid #202a3a;color:var(--text);padding:10px;border-radius:10px;outline:none}
     input:focus,select:focus,textarea:focus{border-color:#2aa9e0}
-    .hint{font-size:12px;color:#8a95a3}
     .btns{display:flex;gap:10px;flex-wrap:wrap}
     button{background:var(--accent);border:none;color:#04130a;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
     button.secondary{background:var(--muted);color:var(--text)}
     button.ghost{background:transparent;border:1px solid #2f394a;color:var(--text)}
     .danger{background:var(--red);color:#150707}
-    pre{white-space:pre-wrap;background:#0b111b;border:1px solid #1f2a3b;border-radius:12px;padding:12px;max-height:40vh;overflow:auto}
-    .footer{color:#7e8793;font-size:12px;text-align:center;margin:16px 0}
-    .chip{display:inline-block;padding:2px 8px;border:1px solid #384358;border-radius:999px;font-size:12px;color:#aab4c1}
-    .section-title{margin:0 0 10px;font-size:13px;color:#b6bfca;text-transform:uppercase;letter-spacing:.08em}
+    .import-btn{cursor:pointer;display:inline-block;padding:10px 14px;margin-right:10px;color:var(--text);border:1px solid #2f394a;border-radius:10px;background:transparent;font-weight:700;line-height:1.2;height:38px}
+    .import-btn:hover{background:#2f394a}
     /* Auth modal */
     .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:9999}
     .modal.active{display:flex}
     .modal .box{width:100%;max-width:420px;background:var(--card);border:1px solid #1d2633;border-radius:14px;padding:16px}
     /* Landing */
     .landing{min-height:80vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:32px}
-    /* Auth-gating */
     #topbar{display:none}
     #app{display:none}
     body.authed #topbar{display:block}
     body.authed #app{display:block}
     body.authed #landing{display:none}
-    .import-btn {
-  cursor: pointer;
-  display: inline-block;
-  padding: 10px 14px;
-  margin-right: 10px;
-  color: var(--text);
-  border: 1px solid #2f394a;
-  border-radius: 10px;
-  background: transparent;
-  font-weight: 700;
-  line-height: 1.2;
-  height: 38px; /* matcher knappernes højde */
-}
-
-.import-btn:hover {
-  background: #2f394a;
-}
-
-
   </style>
 </head>
 <body>
-  <!-- Topbar (vises efter login) -->
   <header id="topbar"> 
-  <div class="wrap" style="display:flex;align-items:center;gap:14px;justify-content:space-between">
-    <div>
-      <h1>CS2 Autoexec Configurator</h1>
-      <div class="hint">
-        Lav og redigér din <span class="chip">autoexec.cfg</span> uden at åbne spillet.
+    <div class="wrap" style="display:flex;align-items:center;gap:14px;justify-content:space-between">
+      <div>
+        <h1>CS2 Autoexec Configurator</h1>
+        <div class="hint">Lav og redigér din <span class="chip">autoexec.cfg</span> uden at åbne spillet.</div>
+      </div>
+      <div class="btns">
+        <label for="file-import" class="import-btn">Importér autoexec.cfg</label>
+        <input id="file-import" type="file" accept=".cfg,.txt" hidden />
+        <button id="btn-save-cloud" class="ghost">Gem i skyen</button>
+        <button id="btn-load-cloud" class="ghost">Hent fra skyen</button>
+        <button id="btn-auth" class="ghost">Log ind</button>
+        <button id="btn-logout" class="danger" style="display:none">Log ud</button>
+        <button id="btn-reset" class="danger">Nulstil</button>
       </div>
     </div>
-    <div class="btns">
-      <label for="file-import" class="ghost import-btn">
-        Importér autoexec.cfg
-      </label>
-      <input id="file-import" type="file" accept=".cfg,.txt" hidden />
-      <button id="btn-save-cloud" class="ghost">Gem i skyen</button>
-      <button id="btn-load-cloud" class="ghost">Hent fra skyen</button>
-      <button id="btn-auth" class="ghost">Log ind</button>
-      <button id="btn-reset" class="danger">Nulstil</button>
-      <button id="btn-logout" class="danger" style="display:none">Log ud</button>
-    </div>
-  </div>
-</header>
+  </header>
 
-
-
-
-  <!-- Landing før login -->
   <section id="landing" class="landing">
     <div>
       <h1 style="font-size:36px;margin:0 0 8px">CS2 Autoexec</h1>
@@ -100,103 +68,20 @@
     </div>
   </section>
 
-  <!-- App efter login -->
   <main id="app" class="wrap" style="margin-top:14px">
-    <div class="grid">
-      <!-- Mus & Sens -->
-      <section class="card col-4">
-        <h3 class="section-title">Mus & Sens</h3>
-        <div class="row">
-          <div><label>Fysisk DPI</label><input id="dpi" type="number" min="50" max="32000" step="50" value="800" /></div>
-          <div><label>Sensitivity (sensitivity)</label><input id="sensitivity" type="number" min="0.01" max="10" step="0.01" value="1.0" /></div>
-          <div><label>Zoom sens (zoom_sensitivity_ratio_mouse)</label><input id="zoom_sens" type="number" min="0.2" max="2" step="0.01" value="1.0" /></div>
-          <div><label>m_rawinput</label><select id="m_rawinput"><option value="1">1</option><option value="0">0</option></select></div>
-          <div><label>m_mouseaccel</label><select id="m_mouseaccel"><option value="0">0</option><option value="1">1</option></select></div>
-          <div><label>eDPI (beregnet)</label><input id="edpi" type="text" disabled value="800" /></div>
-        </div>
-        <div class="hint">eDPI = DPI × sensitivity</div>
-      </section>
-
-      <!-- Crosshair -->
-      <section class="card col-4">
-        <h3 class="section-title">Crosshair</h3>
-        <div class="row">
-          <div><label>Størrelse (cl_crosshairsize)</label><input id="ch_size" type="number" step="0.1" value="2.5" /></div>
-          <div><label>Tykkelse (cl_crosshairthickness)</label><input id="ch_thickness" type="number" step="0.1" value="0.8" /></div>
-          <div><label>Gap (cl_crosshairgap)</label><input id="ch_gap" type="number" step="0.1" value="-2" /></div>
-          <div><label>Alpha (cl_crosshairalpha)</label><input id="ch_alpha" type="number" min="0" max="255" value="255" /></div>
-          <div>
-            <label>Farve R,G,B</label>
-            <div class="row">
-              <input id="ch_r" type="number" min="0" max="255" value="0" />
-              <input id="ch_g" type="number" min="0" max="255" value="255" />
-              <input id="ch_b" type="number" min="0" max="255" value="170" />
-            </div>
-          </div>
-          <div><label>Outline (cl_crosshair_drawoutline)</label><select id="ch_outline"><option value="1">1</option><option value="0">0</option></select></div>
-          <div><label>Outline tykkelse</label><input id="ch_outline_thickness" type="number" step="0.1" value="1" /></div>
-          <div><label>Dot (cl_crosshairdot)</label><select id="ch_dot"><option value="0">0</option><option value="1">1</option></select></div>
-        </div>
-      </section>
-
-      <!-- Viewmodel -->
-      <section class="card col-4">
-        <h3 class="section-title">Viewmodel</h3>
-        <div class="row">
-          <div><label>viewmodel_fov</label><input id="vm_fov" type="number" step="1" value="68" /></div>
-          <div><label>viewmodel_offset_x</label><input id="vm_x" type="number" step="0.5" value="2.5" /></div>
-          <div><label>viewmodel_offset_y</label><input id="vm_y" type="number" step="0.5" value="0" /></div>
-          <div><label>viewmodel_offset_z</label><input id="vm_z" type="number" step="0.5" value="-1.5" /></div>
-        </div>
-      </section>
-
-      <!-- Netværk & Lyd -->
-      <section class="card col-6">
-        <h3 class="section-title">Netværk & Lyd</h3>
-        <div class="row">
-          <div><label>rate</label><input id="rate" type="number" step="1" value="786432" /></div>
-          <div><label>cl_cmdrate</label><input id="cmdrate" type="number" value="128" /></div>
-          <div><label>cl_updaterate</label><input id="updaterate" type="number" value="128" /></div>
-          <div><label>snd_mixahead</label><input id="mixahead" type="number" step="0.01" value="0.025" /></div>
-          <div><label>volume</label><input id="volume" type="number" step="0.01" min="0" max="1" value="0.4" /></div>
-          <div><label>voice_enable</label><select id="voice_enable"><option value="1">1</option><option value="0">0</option></select></div>
-        </div>
-      </section>
-
-      <!-- Binds -->
-      <section class="card col-6">
-        <h3 class="section-title">Keybinds (valgfrie)</h3>
-        <div class="row">
-          <div><label>Jumpthrow bind (tastebogstav)</label><input id="bind_jumpthrow" placeholder="f.eks. v" value="v" /></div>
-          <div><label>Quick switch (tastebogstav)</label><input id="bind_quickswitch" placeholder="f.eks. q" value="q" /></div>
-        </div>
-        <div class="hint">Efterlad tom for at springe binds over.</div>
-      </section>
-
-      <!-- Custom -->
-      <section class="card col-12">
-        <h3 class="section-title">Egne linjer</h3>
-        <textarea id="custom" rows="5" placeholder="Skriv evt. ekstra cvars eller ekko‑kommentarer her..."></textarea>
-      </section>
-
-      <!-- Output -->
-      <section class="card col-12">
-        <h3 class="section-title">autoexec.cfg</h3>
-        <pre id="output">// Klik "Generér" for at se indholdet her.
-// Placér filen som: Steam\\steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg\\autoexec.cfg
-// Startargument i Steam: +exec autoexec.cfg
-</pre>
-        <div class="btns">
-          <button id="btn-generate-2">Generér igen</button>
-          <button id="btn-download-2" class="secondary">Download</button>
-        </div>
-      </section>
-    </div>
-
-    <div class="footer">Gemmes lokalt i din browser eller i skyen via Supabase.</div>
+    <section class="card col-12">
+      <h3>Vælg preset</h3>
+      <select id="preset-select">
+        <option value="">-- Vælg en preset --</option>
+        <option value="s1mple">s1mple Crosshair</option>
+        <option value="zywoo">ZywOo Crosshair</option>
+        <option value="lan">LAN Netværk</option>
+        <option value="matchmaking">Valve Matchmaking</option>
+      </select>
+    </section>
+    <p>Her skal alle dine indstillinger og autoexec generator vises.</p>
   </main>
 
-  <!-- Auth Modal -->
   <div id="auth-modal" class="modal">
     <div class="box">
       <h3 class="section-title">Login</h3>
@@ -218,95 +103,6 @@
     const $ = (id) => document.getElementById(id);
     const on = (id, handler)=>{ const el=$(id); if(el) el.onclick = handler; }
 
-    // --------- Felter ---------
-    const fields = [
-      'dpi','sensitivity','zoom_sens','m_rawinput','m_mouseaccel','ch_size','ch_thickness','ch_gap','ch_alpha','ch_r','ch_g','ch_b','ch_outline','ch_outline_thickness','ch_dot','vm_fov','vm_x','vm_y','vm_z','rate','cmdrate','updaterate','mixahead','volume','voice_enable','bind_jumpthrow','bind_quickswitch','custom'
-    ];
-
-    function loadState(){
-      const raw = localStorage.getItem('cs2_cfg_state');
-      if(!raw) return;
-      try{ const s = JSON.parse(raw); fields.forEach(k=>{ if(s[k]!==undefined && $(k)) $(k).value = s[k]; }); }catch{}
-      updateEdpi();
-    }
-    function saveState(){
-      const s = {}; fields.forEach(k=> s[k] = $(k).value );
-      localStorage.setItem('cs2_cfg_state', JSON.stringify(s));
-    }
-    function updateEdpi(){
-      const dpi = parseFloat($('dpi').value||0); const sens = parseFloat($('sensitivity').value||0);
-      const edpi = Math.round(dpi * sens);
-      $('edpi').value = isFinite(edpi) ? edpi : '';
-    }
-    function cfgLine(key,val){
-      return `${key} ${typeof val === 'string' && /\s/.test(val) ? '"'+val+'"' : val}`;
-    }
-    function generateCfg(){
-      const v = Object.fromEntries(fields.map(k=>[k,$(k).value]));
-      const lines = [];
-      lines.push('// === CS2 AUTOEXEC GENERERET AF WEB ===');
-      lines.push('echo "AUTOEXEC LOADED"');
-      lines.push('con_enable "1"');
-      // Mouse
-      lines.push(cfgLine('sensitivity', v.sensitivity));
-      lines.push(cfgLine('zoom_sensitivity_ratio_mouse', v.zoom_sens));
-      lines.push(cfgLine('m_rawinput', v.m_rawinput));
-      lines.push(cfgLine('m_mouseaccel1', v.m_mouseaccel));
-      lines.push(cfgLine('m_mouseaccel2', v.m_mouseaccel));
-      // Crosshair
-      lines.push(cfgLine('cl_crosshairsize', v.ch_size));
-      lines.push(cfgLine('cl_crosshairthickness', v.ch_thickness));
-      lines.push(cfgLine('cl_crosshairgap', v.ch_gap));
-      lines.push(cfgLine('cl_crosshairalpha', v.ch_alpha));
-      lines.push(cfgLine('cl_crosshaircolor_r', v.ch_r));
-      lines.push(cfgLine('cl_crosshaircolor_g', v.ch_g));
-      lines.push(cfgLine('cl_crosshaircolor_b', v.ch_b));
-      lines.push(cfgLine('cl_crosshair_drawoutline', v.ch_outline));
-      lines.push(cfgLine('cl_crosshair_outlinethickness', v.ch_outline_thickness));
-      lines.push(cfgLine('cl_crosshairdot', v.ch_dot));
-      // Viewmodel
-      lines.push(cfgLine('viewmodel_fov', v.vm_fov));
-      lines.push(cfgLine('viewmodel_offset_x', v.vm_x));
-      lines.push(cfgLine('viewmodel_offset_y', v.vm_y));
-      lines.push(cfgLine('viewmodel_offset_z', v.vm_z));
-      // Net/Audio
-      lines.push(cfgLine('rate', v.rate));
-      lines.push(cfgLine('cl_cmdrate', v.cmdrate));
-      lines.push(cfgLine('cl_updaterate', v.updaterate));
-      lines.push(cfgLine('snd_mixahead', v.mixahead));
-      lines.push(cfgLine('volume', v.volume));
-      lines.push(cfgLine('voice_enable', v.voice_enable));
-      // Binds
-      if(v.bind_jumpthrow){
-        const key = v.bind_jumpthrow;
-        lines.push(`alias "+jumpthrow" "+jump; -attack; -attack2"`);
-        lines.push(`alias "-jumpthrow" "-jump"`);
-        lines.push(`bind ${key} "+jumpthrow"`);
-      }
-      if(v.bind_quickswitch){
-        const key = v.bind_quickswitch;
-        lines.push(`bind ${key} "slot3; slot1"`);
-      }
-      // Custom
-      if(v.custom && v.custom.trim().length){
-        lines.push('// --- Egne linjer ---');
-        lines.push(v.custom.trim());
-      }
-      // Persist
-      lines.push('host_writeconfig');
-      const cfg = lines.join('\n');
-      $('output').textContent = cfg + '\n';
-      return cfg;
-    }
-    function download(text, filename){
-      const blob = new Blob([text], {type:'text/plain'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // --------- Supabase ---------
     const SUPABASE_URL = 'https://fhrhpanpsfhqtpitkwvw.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZocmhwYW5wc2ZocXRwaXRrd3Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMjQ2NjMsImV4cCI6MjA3MzgwMDY2M30.byKWY3wd1I_7XVEn4BzZGUmSxlte_ewlCFFh8YLIy9E';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -319,59 +115,22 @@
       $('btn-logout').style.display = loggedIn ? '' : 'none';
     }
 
-    async function saveCloud(){
-      const cfg = generateCfg();
-      const { data:{ user } } = await sb.auth.getUser();
-      if(!user){ $('auth-modal').classList.add('active'); return; }
-      const { error } = await sb.from('autoexecs').upsert({ user_id: user.id, cfg }, { onConflict: 'user_id' });
-      if(error){ alert('Fejl ved gem: '+error.message); return; }
-      alert('Gemt i skyen.');
-    }
-    async function loadCloud(){
-      const { data:{ user } } = await sb.auth.getUser();
-      if(!user){ $('auth-modal').classList.add('active'); return; }
-      const { data, error } = await sb.from('autoexecs').select('cfg').eq('user_id', user.id).single();
-      if(error){ alert('Intet fundet for din konto.'); return; }
-      // Skriv cfg ind i textarea for custom, samt udfyld felter hvis muligt
-      $('custom').value = data.cfg || '';
-      alert('Indlæst fra skyen.');
-    }
+    // Presets JSON
+    const presets = {
+      s1mple: { ch_size:2.5, ch_thickness:0.5, ch_gap:-2, ch_color:[0,255,0] },
+      zywoo: { ch_size:3, ch_thickness:1, ch_gap:-3, ch_color:[255,255,0] },
+      lan: { rate:786432, cmdrate:128, updaterate:128 },
+      matchmaking: { rate:196608, cmdrate:64, updaterate:64 }
+    };
 
-    // Modal handlers
-    on('btn-auth', ()=> $('auth-modal').classList.add('active'));
-    on('landing-signup', ()=> $('auth-modal').classList.add('active'));
-    on('landing-login', ()=> $('auth-modal').classList.add('active'));
-    on('auth-close', ()=> $('auth-modal').classList.remove('active'));
-
-    on('auth-signup', async ()=>{
-      const email=$('auth-email').value.trim();
-      const password=$('auth-password').value;
-      const { error } = await sb.auth.signUp({ email, password });
-      if(error){ alert(error.message); return; }
-      alert('Konto oprettet. Tjek evt. mail for verifikation.');
-      $('auth-modal').classList.remove('active'); updateAuthUI();
+    on('preset-select', ()=>{
+      const val = $('preset-select').value;
+      if(presets[val]){
+        console.log('Preset valgt:', presets[val]);
+        // Her kan du udfylde felter automatisk senere
+      }
     });
-    on('auth-login', async ()=>{
-      const email=$('auth-email').value.trim();
-      const password=$('auth-password').value;
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if(error){ alert(error.message); return; }
-      $('auth-modal').classList.remove('active'); updateAuthUI();
-    });
-    on('btn-logout', async ()=>{ await sb.auth.signOut(); updateAuthUI(); });
 
-    // Knapper i topbar + outputkort
-    on('btn-generate', ()=>{ generateCfg(); saveState(); });
-    on('btn-generate-2', ()=>{ generateCfg(); saveState(); });
-    const doDownload = ()=> download(generateCfg(), 'autoexec.cfg');
-    on('btn-download', doDownload); on('btn-download-2', doDownload);
-    on('btn-save-cloud', saveCloud);
-    on('btn-load-cloud', loadCloud);
-    on('btn-reset', ()=>{ if(confirm('Nulstil alle felter?')){ localStorage.removeItem('cs2_cfg_state'); location.reload(); } });
-
-    // Init
-    loadState();
-    generateCfg();
     updateAuthUI();
   </script>
 </body>
