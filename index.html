@@ -40,6 +40,22 @@
     body.authed #topbar{display:block}
     body.authed #app{display:block}
     body.authed #landing{display:none}
+    .import-btn {
+  cursor: pointer;
+  display: inline-block;
+  padding: 10px 14px;
+  margin-right: 10px;
+  color: var(--text);
+  border: 1px solid #2f394a;
+  border-radius: 10px;
+  background: transparent;
+  font-weight: 600;
+}
+
+.import-btn:hover {
+  background: #2f394a;
+}
+
   </style>
 </head>
 <body>
@@ -53,8 +69,7 @@
       </div>
     </div>
     <div class="btns">
-      <label for="file-import" class="ghost" 
-             style="cursor:pointer;display:inline-block;padding:10px 14px;margin-right:10px">
+      <label for="file-import" class="ghost import-btn">
         Importér autoexec.cfg
       </label>
       <input id="file-import" type="file" accept=".cfg,.txt" hidden />
@@ -66,6 +81,7 @@
     </div>
   </div>
 </header>
+
 
 
 
