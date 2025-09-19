@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CS2 Autoexec Configurator</title>
+  <style>
+    :root{--bg:#0b0f14;--card:#121821;--muted:#1b2430;--text:#e6edf3;--sub:#a9b1ba;--accent:#3ba55d;--accent2:#2aa9e0;--red:#e05a5a}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0b0f14 0%,#0e1420 100%);color:var(--text);font:14px/1.5 system-ui,Segoe UI,Roboto,Arial}
+    header{position:sticky;top:0;backdrop-filter:saturate(1.2) blur(8px);background:#0b0f14cc;border-bottom:1px solid #1d2633;z-index:10}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    h1{margin:4px 0 0;font-weight:700;font-size:20px}
+    .grid{display:grid;gap:14px;grid-template-columns:repeat(12,1fr)}
+    .card{background:var(--card);border:1px solid #1d2633;border-radius:14px;padding:16px}
+    .col-12{grid-column:span 12}
+    .btns{display:flex;gap:10px;flex-wrap:wrap}
+    button{background:var(--accent);border:none;color:#04130a;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+    button.secondary{background:var(--muted);color:var(--text)}
+    button.ghost{background:transparent;border:1px solid #2f394a;color:var(--text)}
+    .danger{background:var(--red);color:#150707}
+    pre{white-space:pre-wrap;background:#0b111b;border:1px solid #1f2a3b;border-radius:12px;padding:12px;max-height:40vh;overflow:auto}
+    .footer{color:#7e8793;font-size:12px;text-align:center;margin:16px 0}
+    .chip{display:inline-block;padding:2px 8px;border:1px solid #384358;border-radius:999px;font-size:12px;color:#aab4c1}
+    .section-title{margin:0 0 10px;font-size:13px;color:#b6bfca;text-transform:uppercase;letter-spacing:.08em}
+    /* Auth modal */
+    .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:9999}
+    .modal.active{display:flex}
+    .modal .box{width:100%;max-width:420px;background:var(--card);border:1px solid #1d2633;border-radius:14px;padding:16px}
+    /* Landing */
+    .landing{min-height:80vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:32px}
+    #topbar{display:none}
+    #app{display:none}
+    body.authed #topbar{display:block}
+    body.authed #app{display:block}
+    body.authed #landing{display:none}
+  </style>
+</head>
+<body>
+  <!-- Topbar -->
+  <header id="topbar">
+    <div class="wrap" style="display:flex;align-items:center;gap:14px;justify-content:space-between">
+      <div>
+        <h1>CS2 Autoexec Configurator</h1>
+        <div class="hint">Lav og redigér din <span class="chip">autoexec.cfg</span> uden at åbne spillet.</div>
+      </div>
+      <div class="btns">
+        <button id="btn-generate">Generér</button>
+        <button id="btn-download" class="secondary">Download autoexec.cfg</button>
+        <button id="btn-save-cloud" class="ghost">Gem i skyen</button>
+        <button id="btn-load-cloud" class="ghost">Hent fra skyen</button>
+        <button id="btn-auth" class="ghost">Log ind</button>
+        <button id="btn-logout" class="danger" style="display:none">Log ud</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Landing -->
+  <section id="landing" class="landing">
+    <div>
+      <h1 style="font-size:36px;margin:0 0 8px">CS2 Autoexec</h1>
+      <p style="color:#a9b1ba;margin:0 0 18px">Konfigurér og gem din <span class="chip">autoexec.cfg</span> i skyen. Download når du vil.</p>
+      <div class="btns" style="justify-content:center">
+        <button id="landing-signup">Kom i gang gratis</button>
+        <button id="landing-login" class="secondary">Log ind</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- App -->
+  <main id="app" class="wrap" style="margin-top:14px">
+    <section class="card col-12">
+      <h3 class="section-title">autoexec.cfg</h3>
+      <pre id="output">// Klik "Generér" for at se indholdet her.
+// Placér filen som: Steam\\steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg\\autoexec.cfg
+// Startargument i Steam: +exec autoexec.cfg</pre>
+    </section>
+    <div class="footer">Gemmes lokalt i din browser eller i skyen via Supabase.</div>
+  </main>
+
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="modal">
+    <div class="box">
+      <h3 class="section-title">Login</h3>
+      <label>Email</label>
+      <input id="auth-email" type="email" placeholder="you@example.com" />
+      <label>Kodeord</label>
+      <input id="auth-password" type="password" placeholder="••••••••" />
+      <div class="btns" style="margin-top:10px">
+        <button id="auth-signup">Opret konto</button>
+        <button id="auth-login" class="secondary">Log ind</button>
+        <button id="auth-close" class="ghost">Luk</button>
+      </div>
+      <div class="hint">Din autoexec gemmes kun på din konto (RLS).</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const on = (id, handler)=>{ const el=$(id); if(el) el.onclick = handler; }
+
+    // Supabase client
+    const SUPABASE_URL = 'https://fhrhpanpsfhqtpitkwvw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZocmhwYW5wc2ZocXRwaXRrd3Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMjQ2NjMsImV4cCI6MjA3MzgwMDY2M30.byKWY3wd1I_7XVEn4BzZGUmSxlte_ewlCFFh8YLIy9E';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function updateAuthUI(){
+      const { data:{ user } } = await sb.auth.getUser();
+      const loggedIn = !!user;
+      document.body.classList.toggle('authed', loggedIn);
+      $('btn-auth').style.display = loggedIn ? 'none' : '';
+      $('btn-logout').style.display = loggedIn ? '' : 'none';
+    }
+
+    // Modal handlers
+    on('btn-auth', ()=> $('auth-modal').classList.add('active'));
+    on('landing-signup', ()=> $('auth-modal').classList.add('active'));
+    on('landing-login', ()=> $('auth-modal').classList.add('active'));
+    on('auth-close', ()=> $('auth-modal').classList.remove('active'));
+
+    on('auth-signup', async ()=>{
+      const email=$('auth-email').value.trim();
+      const password=$('auth-password').value;
+      const { error } = await sb.auth.signUp({ email, password });
+      if(error){ alert(error.message); return; }
+      alert('Konto oprettet. Tjek evt. mail for verifikation.');
+      $('auth-modal').classList.remove('active'); updateAuthUI();
+    });
+    on('auth-login', async ()=>{
+      const email=$('auth-email').value.trim();
+      const password=$('auth-password').value;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error){ alert(error.message); return; }
+      $('auth-modal').classList.remove('active'); updateAuthUI();
+    });
+    on('btn-logout', async ()=>{ await sb.auth.signOut(); updateAuthUI(); });
+
+    updateAuthUI();
+  </script>
+</body>
+</html>
