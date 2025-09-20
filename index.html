@@ -13,7 +13,7 @@
     h1{margin:4px 0 0;font-weight:700;font-size:20px}
     .grid{display:grid;gap:14px;grid-template-columns:repeat(12,1fr)}
     .card{background:var(--card);border:1px solid #1d2633;border-radius:14px;padding:16px}
-    .col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+    .col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-12{grid-column:span 12}
     .row{display:grid;gap:10px;grid-template-columns:1fr 1fr}
     label{font-size:12px;color:var(--sub);display:block;margin-bottom:6px}
     input, select, textarea{width:100%;background:#0e1520;border:1px solid #202a3a;color:var(--text);padding:10px;border-radius:10px;outline:none}
@@ -28,26 +28,19 @@
     .footer{color:#7e8793;font-size:12px;text-align:center;margin:16px 0}
     .chip{display:inline-block;padding:2px 8px;border:1px solid #384358;border-radius:999px;font-size:12px;color:#aab4c1}
     .section-title{margin:0 0 10px;font-size:13px;color:#b6bfca;text-transform:uppercase;letter-spacing:.08em}
-    /* Import label styled like ghost buttons */
     .import-btn{cursor:pointer;display:inline-block;padding:10px 14px;margin-right:10px;color:var(--text);border:1px solid #2f394a;border-radius:10px;background:transparent;font-weight:700;line-height:1.2;height:38px}
     .import-btn:hover{background:#2f394a}
-    /* Auth modal */
     .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:9999}
     .modal.active{display:flex}
     .modal .box{width:100%;max-width:420px;background:var(--card);border:1px solid #1d2633;border-radius:14px;padding:16px}
-    /* Landing */
     .landing{min-height:80vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:32px}
-    /* Auth-gating */
-    #topbar{display:none}
-    #app{display:none}
-    body.authed #topbar{display:block}
-    body.authed #app{display:block}
-    body.authed #landing{display:none}
+    #topbar{display:none} #app{display:none}
+    body.authed #topbar{display:block} body.authed #app{display:block} body.authed #landing{display:none}
   </style>
 </head>
 <body>
 
-  <!-- Topbar (vises efter login) -->
+  <!-- Topbar (kun efter login) -->
   <header id="topbar">
     <div class="wrap" style="display:flex;align-items:center;gap:14px;justify-content:space-between">
       <div>
@@ -94,7 +87,7 @@
         </div>
         <div class="hint" style="margin-bottom:8px">eDPI = DPI × sensitivity</div>
 
-        <!-- Vælg preset UNDER Mus & Sens -->
+        <!-- Presets under Mus & Sens -->
         <div class="row">
           <div class="col-12" style="grid-column:span 2">
             <label>Vælg preset</label>
@@ -194,9 +187,10 @@
       <input id="auth-email" type="email" placeholder="you@example.com" />
       <label>Kodeord</label>
       <input id="auth-password" type="password" placeholder="••••••••" />
-      <div class="btns" style="margin-top:10px">
+      <div class="btns" style="margin-top:10px;flex-wrap:wrap">
         <button id="auth-signup">Opret konto</button>
         <button id="auth-login" class="secondary">Log ind</button>
+        <button id="auth-google" class="ghost" title="Log ind med Google">Fortsæt med Google</button>
         <button id="auth-close" class="ghost">Luk</button>
       </div>
       <div class="hint">Din autoexec gemmes kun på din konto (RLS).</div>
@@ -204,221 +198,11 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const $ = (id)=>document.getElementById(id);
-  const on = (id, fn)=>{ const el=$(id); if(el) el.addEventListener('click', fn); };
+  <script>
+    const $ = (id)=>document.getElementById(id);
+    const on = (id, fn)=>{ const el=$(id); if(el) el.addEventListener('click', fn); };
 
-  // Supabase client
-  const sb = window.supabase.createClient(
-    'https://fhrhpanpsfhqtpitkwvw.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZocmhwYW5wc2ZocXRwaXRrd3Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMjQ2NjMsImV4cCI6MjA3MzgwMDY2M30.byKWY3wd1I_7XVEn4BzZGUmSxlte_ewlCFFh8YLIy9E'
-  );
-
-  async function updateAuthUI(){
-    const { data:{ user } } = await sb.auth.getUser();
-    document.body.classList.toggle('authed', !!user);
-  }
-
-  // Auth modal
-  function bindAuthButtons(){
-    on('btn-auth', ()=> $('auth-modal').classList.add('active'));
-    on('landing-signup', ()=> $('auth-modal').classList.add('active'));
-    on('landing-login', ()=> $('auth-modal').classList.add('active'));
-    on('auth-close', ()=> $('auth-modal').classList.remove('active'));
-
-    on('auth-signup', async ()=>{
-      const email = ($('auth-email').value||'').trim();
-      const password = $('auth-password').value||'';
-      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return alert('Indtast gyldig email.');
-      if(password.length<6) return alert('Password mindst 6 tegn.');
-      const { error } = await sb.auth.signUp({ email, password });
-      if(error){
-  alert(error.message);
-  return;
-}
-      $('auth-modal').classList.remove('active');
-      updateAuthUI();
-    });
-
-    on('auth-login', async ()=>{
-      const email = ($('auth-email').value||'').trim();
-      const password = $('auth-password').value||'';
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if(error) return alert(error.message);
-      $('auth-modal').classList.remove('active');
-      updateAuthUI();
-    });
-
-    on('btn-logout', async ()=>{ await sb.auth.signOut(); updateAuthUI(); });
-  }
-
-  function init(){
-    bindAuthButtons();
-    updateAuthUI();
-  }
-  window.addEventListener('DOMContentLoaded', init);
-</script>
-
-<script>
-    /* ---------- FELTER ---------- */
-    const fields = [
-      'dpi','sensitivity','zoom_sens','m_rawinput','m_mouseaccel',
-      'ch_size','ch_thickness','ch_gap','ch_alpha','ch_r','ch_g','ch_b','ch_outline','ch_outline_thickness','ch_dot',
-      'vm_fov','vm_x','vm_y','vm_z',
-      'rate','cmdrate','updaterate','mixahead','volume','voice_enable',
-      'bind_jumpthrow','bind_quickswitch','custom'
-    ];
-
-    function loadState(){
-      const raw = localStorage.getItem('cs2_cfg_state');
-      if(!raw) return;
-      try{ const s = JSON.parse(raw); fields.forEach(k=>{ if(s[k]!==undefined && $(k)) $(k).value = s[k]; }); }catch{}
-      updateEdpi();
-    }
-    function saveState(){
-      const s = {}; fields.forEach(k=> s[k] = $(k).value );
-      localStorage.setItem('cs2_cfg_state', JSON.stringify(s));
-    }
-    function updateEdpi(){
-      const dpi = parseFloat($('dpi').value||0); const sens = parseFloat($('sensitivity').value||0);
-      const edpi = Math.round(dpi * sens);
-      $('edpi').value = isFinite(edpi) ? edpi : '';
-    }
-    function cfgLine(key,val){
-      return `${key} ${typeof val === 'string' && /\s/.test(val) ? '"'+val+'"' : val}`;
-    }
-    function generateCfg(){
-      const v = Object.fromEntries(fields.map(k=>[k,$(k).value]));
-      const lines = [];
-      lines.push('// === CS2 AUTOEXEC GENERERET AF WEB ===');
-      lines.push('echo "AUTOEXEC LOADED"');
-      lines.push('con_enable "1"');
-      // Mouse
-      lines.push(cfgLine('sensitivity', v.sensitivity));
-      lines.push(cfgLine('zoom_sensitivity_ratio_mouse', v.zoom_sens));
-      lines.push(cfgLine('m_rawinput', v.m_rawinput));
-      lines.push(cfgLine('m_mouseaccel1', v.m_mouseaccel));
-      lines.push(cfgLine('m_mouseaccel2', v.m_mouseaccel));
-      // Crosshair
-      lines.push(cfgLine('cl_crosshairsize', v.ch_size));
-      lines.push(cfgLine('cl_crosshairthickness', v.ch_thickness));
-      lines.push(cfgLine('cl_crosshairgap', v.ch_gap));
-      lines.push(cfgLine('cl_crosshairalpha', v.ch_alpha));
-      lines.push(cfgLine('cl_crosshaircolor_r', v.ch_r));
-      lines.push(cfgLine('cl_crosshaircolor_g', v.ch_g));
-      lines.push(cfgLine('cl_crosshaircolor_b', v.ch_b));
-      lines.push(cfgLine('cl_crosshair_drawoutline', v.ch_outline));
-      lines.push(cfgLine('cl_crosshair_outlinethickness', v.ch_outline_thickness));
-      lines.push(cfgLine('cl_crosshairdot', v.ch_dot));
-      // Viewmodel
-      lines.push(cfgLine('viewmodel_fov', v.vm_fov));
-      lines.push(cfgLine('viewmodel_offset_x', v.vm_x));
-      lines.push(cfgLine('viewmodel_offset_y', v.vm_y));
-      lines.push(cfgLine('viewmodel_offset_z', v.vm_z));
-      // Net/Audio
-      lines.push(cfgLine('rate', v.rate));
-      lines.push(cfgLine('cl_cmdrate', v.cmdrate));
-      lines.push(cfgLine('cl_updaterate', v.updaterate));
-      lines.push(cfgLine('snd_mixahead', v.mixahead));
-      lines.push(cfgLine('volume', v.volume));
-      lines.push(cfgLine('voice_enable', v.voice_enable));
-      // Binds
-      if(v.bind_jumpthrow){
-        const key = v.bind_jumpthrow;
-        lines.push(`alias "+jumpthrow" "+jump; -attack; -attack2"`);
-        lines.push(`alias "-jumpthrow" "-jump"`);
-        lines.push(`bind ${key} "+jumpthrow"`);
-      }
-      if(v.bind_quickswitch){
-        const key = v.bind_quickswitch;
-        lines.push(`bind ${key} "slot3; slot1"`);
-      }
-      // Custom
-      if(v.custom && v.custom.trim().length){
-        lines.push('// --- Egne linjer ---');
-        lines.push(v.custom.trim());
-      }
-      // Persist
-      lines.push('host_writeconfig');
-      const cfg = lines.join('\n');
-      $('output').textContent = cfg + '\n';
-      return cfg;
-    }
-    function download(text, filename){
-      const blob = new Blob([text], {type:'text/plain'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    /* ---------- IMPORT .CFG ---------- */
-    function importCfg(text){
-      const map = new Map();
-      const known = [
-        'sensitivity','zoom_sensitivity_ratio_mouse','m_rawinput','m_mouseaccel','m_mouseaccel1','m_mouseaccel2',
-        'cl_crosshairsize','cl_crosshairthickness','cl_crosshairgap','cl_crosshairalpha',
-        'cl_crosshaircolor_r','cl_crosshaircolor_g','cl_crosshaircolor_b',
-        'cl_crosshair_drawoutline','cl_crosshair_outlinethickness','cl_crosshairdot',
-        'viewmodel_fov','viewmodel_offset_x','viewmodel_offset_y','viewmodel_offset_z',
-        'rate','cl_cmdrate','cl_updaterate','snd_mixahead','volume','voice_enable'
-      ];
-      const other = [];
-      String(text).split(/\r?\n/).forEach(line=>{
-        const l=line.trim(); if(!l || l.startsWith('//')) return;
-        const m = l.match(/^(\S+)\s+(.+)$/);
-        if(m){
-          const k=m[1]; let val=m[2].replace(/^\"|\"$/g,'');
-          if(known.includes(k)) map.set(k,val);
-          else other.push(l);
-        }
-      });
-      if(map.has('sensitivity')) $('sensitivity').value = map.get('sensitivity');
-      if(map.has('zoom_sensitivity_ratio_mouse')) $('zoom_sens').value = map.get('zoom_sensitivity_ratio_mouse');
-      if(map.has('m_rawinput')) $('m_rawinput').value = map.get('m_rawinput');
-      const accel = map.get('m_mouseaccel') ?? map.get('m_mouseaccel1') ?? map.get('m_mouseaccel2');
-      if(accel!==undefined) $('m_mouseaccel').value = accel;
-      if(map.has('cl_crosshairsize')) $('ch_size').value = map.get('cl_crosshairsize');
-      if(map.has('cl_crosshairthickness')) $('ch_thickness').value = map.get('cl_crosshairthickness');
-      if(map.has('cl_crosshairgap')) $('ch_gap').value = map.get('cl_crosshairgap');
-      if(map.has('cl_crosshairalpha')) $('ch_alpha').value = map.get('cl_crosshairalpha');
-      if(map.has('cl_crosshaircolor_r')) $('ch_r').value = map.get('cl_crosshaircolor_r');
-      if(map.has('cl_crosshaircolor_g')) $('ch_g').value = map.get('cl_crosshaircolor_g');
-      if(map.has('cl_crosshaircolor_b')) $('ch_b').value = map.get('cl_crosshaircolor_b');
-      if(map.has('cl_crosshair_drawoutline')) $('ch_outline').value = map.get('cl_crosshair_drawoutline');
-      if(map.has('cl_crosshair_outlinethickness')) $('ch_outline_thickness').value = map.get('cl_crosshair_outlinethickness');
-      if(map.has('cl_crosshairdot')) $('ch_dot').value = map.get('cl_crosshairdot');
-      if(map.has('viewmodel_fov')) $('vm_fov').value = map.get('viewmodel_fov');
-      if(map.has('viewmodel_offset_x')) $('vm_x').value = map.get('viewmodel_offset_x');
-      if(map.has('viewmodel_offset_y')) $('vm_y').value = map.get('viewmodel_offset_y');
-      if(map.has('viewmodel_offset_z')) $('vm_z').value = map.get('viewmodel_offset_z');
-      if(map.has('rate')) $('rate').value = map.get('rate');
-      if(map.has('cl_cmdrate')) $('cmdrate').value = map.get('cl_cmdrate');
-      if(map.has('cl_updaterate')) $('updaterate').value = map.get('cl_updaterate');
-      if(map.has('snd_mixahead')) $('mixahead').value = map.get('snd_mixahead');
-      if(map.has('volume')) $('volume').value = map.get('volume');
-      if(map.has('voice_enable')) $('voice_enable').value = map.get('voice_enable');
-      if(other.length) $('custom').value = other.join('\n');
-      updateEdpi(); saveState(); generateCfg();
-    }
-    const fileInput = $('file-import');
-    if(fileInput){
-      fileInput.addEventListener('change', (e)=>{
-        const f = e.target.files?.[0]; if(!f) return;
-        const r = new FileReader();
-        r.onload = ()=> importCfg(String(r.result||''));
-        r.readAsText(f);
-      });
-    }
-
-    /* ---------- KNAPPER ---------- */
-    fields.forEach(id=>{ const el=$(id); if(!el) return; el.addEventListener('input',()=>{ if(id==='dpi'||id==='sensitivity') updateEdpi(); saveState(); }); });
-    on('btn-generate-2', ()=>{ generateCfg(); saveState(); });
-    const doDownload = ()=> download(generateCfg(), 'autoexec.cfg');
-    on('btn-download-2', doDownload);
-    on('btn-reset', ()=>{ if(confirm('Nulstil alle felter?')){ localStorage.removeItem('cs2_cfg_state'); location.reload(); } });
-
-    /* ---------- SUPABASE ---------- */
+    /* Supabase */
     const SUPABASE_URL = 'https://fhrhpanpsfhqtpitkwvw.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZocmhwYW5wc2ZocXRwaXRrd3Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMjQ2NjMsImV4cCI6MjA3MzgwMDY2M30.byKWY3wd1I_7XVEn4BzZGUmSxlte_ewlCFFh8YLIy9E';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -427,175 +211,139 @@
       const { data:{ user } } = await sb.auth.getUser();
       const loggedIn = !!user;
       document.body.classList.toggle('authed', loggedIn);
-      $('btn-auth').style.display = loggedIn ? 'none' : '';
-      $('btn-logout').style.display = loggedIn ? '' : 'none';
+      if ($('btn-auth')) $('btn-auth').style.display = loggedIn ? 'none' : '';
+      if ($('btn-logout')) $('btn-logout').style.display = loggedIn ? '' : 'none';
     }
-    async function saveCloud(){
-      const cfg = generateCfg();
-      const { data:{ user } } = await sb.auth.getUser();
-      if(!user){ $('auth-modal').classList.add('active'); return; }
-      const { error } = await sb.from('autoexecs').upsert({ user_id: user.id, cfg }, { onConflict: 'user_id' });
-      if(error){ alert('Fejl ved gem: '+error.message); return; }
-      alert('Gemt i skyen.');
+
+    /* Felter + state + generator */
+    const fields = [
+      'dpi','sensitivity','zoom_sens','m_rawinput','m_mouseaccel',
+      'ch_size','ch_thickness','ch_gap','ch_alpha','ch_r','ch_g','ch_b','ch_outline','ch_outline_thickness','ch_dot',
+      'vm_fov','vm_x','vm_y','vm_z','rate','cmdrate','updaterate','mixahead','volume','voice_enable',
+      'bind_jumpthrow','bind_quickswitch','custom'
+    ];
+    function loadState(){ const raw=localStorage.getItem('cs2_cfg_state'); if(!raw) return;
+      try{ const s=JSON.parse(raw); fields.forEach(k=>{ if(s[k]!==undefined && $(k)) $(k).value=s[k]; }); }catch{}
+      updateEdpi();
     }
-    async function loadCloud(){
-      const { data:{ user } } = await sb.auth.getUser();
-      if(!user){ $('auth-modal').classList.add('active'); return; }
-      const { data, error } = await sb.from('autoexecs').select('cfg').eq('user_id', user.id).single();
-      if(error){ alert('Intet fundet for din konto.'); return; }
-      importCfg(data.cfg || '');
-      alert('Indlæst fra skyen.');
+    function saveState(){ const s={}; fields.forEach(k=> s[k]=($(k)||{}).value ); localStorage.setItem('cs2_cfg_state', JSON.stringify(s)); }
+    function updateEdpi(){ const dpi=parseFloat(($('dpi')||{}).value||0), sens=parseFloat(($('sensitivity')||{}).value||0);
+      const edpi=Math.round(dpi*sens); if($('edpi')) $('edpi').value=isFinite(edpi)?edpi:''; }
+    const cfgLine=(k,v)=>`${k} ${typeof v==='string' && /\s/.test(v) ? '"'+v+'"' : v}`;
+    function generateCfg(){
+      const v=Object.fromEntries(fields.map(k=>[k,($(k)||{}).value]));
+      const lines=[
+        '// === CS2 AUTOEXEC GENERERET AF WEB ===','echo "AUTOEXEC LOADED"','con_enable "1"',
+        cfgLine('sensitivity',v.sensitivity), cfgLine('zoom_sensitivity_ratio_mouse',v.zoom_sens),
+        cfgLine('m_rawinput',v.m_rawinput), cfgLine('m_mouseaccel1',v.m_mouseaccel), cfgLine('m_mouseaccel2',v.m_mouseaccel),
+        cfgLine('cl_crosshairsize',v.ch_size), cfgLine('cl_crosshairthickness',v.ch_thickness), cfgLine('cl_crosshairgap',v.ch_gap),
+        cfgLine('cl_crosshairalpha',v.ch_alpha), cfgLine('cl_crosshaircolor_r',v.ch_r), cfgLine('cl_crosshaircolor_g',v.ch_g),
+        cfgLine('cl_crosshaircolor_b',v.ch_b), cfgLine('cl_crosshair_drawoutline',v.ch_outline),
+        cfgLine('cl_crosshair_outlinethickness',v.ch_outline_thickness), cfgLine('cl_crosshairdot',v.ch_dot),
+        cfgLine('viewmodel_fov',v.vm_fov), cfgLine('viewmodel_offset_x',v.vm_x), cfgLine('viewmodel_offset_y',v.vm_y), cfgLine('viewmodel_offset_z',v.vm_z),
+        cfgLine('rate',v.rate), cfgLine('cl_cmdrate',v.cmdrate), cfgLine('cl_updaterate',v.updaterate),
+        cfgLine('snd_mixahead',v.mixahead), cfgLine('volume',v.volume), cfgLine('voice_enable',v.voice_enable)
+      ];
+      if(v.bind_jumpthrow){ lines.push('alias "+jumpthrow" "+jump; -attack; -attack2"','alias "-jumpthrow" "-jump"',`bind ${v.bind_jumpthrow} "+jumpthrow"`); }
+      if(v.bind_quickswitch){ lines.push(`bind ${v.bind_quickswitch} "slot3; slot1"`); }
+      if(v.custom && String(v.custom).trim()){ lines.push('// --- Egne linjer ---', String(v.custom).trim()); }
+      lines.push('host_writeconfig');
+      const cfg=lines.join('\n'); if($('output')) $('output').textContent=cfg+'\n'; return cfg;
     }
-    on('btn-save-cloud', saveCloud);
-    on('btn-load-cloud', loadCloud);
+    function download(text,name){ const b=new Blob([text],{type:'text/plain'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u;a.download=name;a.click();URL.revokeObjectURL(u); }
 
-    // Auth modal bindings
-    function bindAuthButtons(){
-  on('btn-auth', ()=> $('auth-modal').classList.add('active'));
-  on('landing-signup', ()=> $('auth-modal').classList.add('active'));
-  on('landing-login', ()=> $('auth-modal').classList.add('active'));
-  on('auth-close', ()=> $('auth-modal').classList.remove('active'));
-}
-
-function init(){
-  // eksisterende init-kald flyttes herind
-  loadState?.();
-  populatePresets?.();
-  generateCfg?.();
-  updateAuthUI?.();
-  bindAuthButtons();
-}
-window.addEventListener('DOMContentLoaded', init);
-
-  const email = $('auth-email').value.trim();
-  const password = $('auth-password').value;
-
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
-  alert('Indtast gyldig email.');
-  return;
-}
-if(password.length < 6){
-  alert('Password mindst 6 tegn.');
-  return;
-}
-
-
-  const { error } = await sb.auth.signUp({ email, password });
-  if (error) { alert(error.message); return; }
-  alert('Konto oprettet. Tjek evt. mail for verifikation.');
-  $('auth-modal').classList.remove('active');
-  updateAuthUI();
-});
-
-    });
-    on('auth-login', async ()=>{
-      const email=$('auth-email').value.trim();
-      const password=$('auth-password').value;
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if(error){ alert(error.message); return; }
-      $('auth-modal').classList.remove('active'); updateAuthUI();
-    });
-    on('btn-logout', async ()=>{ await sb.auth.signOut(); updateAuthUI(); });
-
-    // Google OAuth
-on('auth-google', async ()=>{
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin }
-  });
-  if(error){ alert(error.message); }
-});
-
-
-    /* ---------- PRESETS (bruges under Mus & Sens) ---------- */
-    const PRESETS = {
-      "s1mple (BC.Game Esports)": {
-    dpi: 400, sensitivity: 3.09, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 2, ch_thickness: 0, ch_gap: -3, ch_alpha: 255,
-    ch_r: 0, ch_g: 255, ch_b: 0, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
-    volume: 0.4, voice_enable: 1
-  },
-  "ZywOo (Vitality)": {
-    dpi: 400, sensitivity: 2.0, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 2, ch_thickness: 0.5, ch_gap: -2, ch_alpha: 255,
-    ch_r: 255, ch_g: 255, ch_b: 255, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
-    volume: 0.4, voice_enable: 1
-  },
-  "NiKo (Falcons)": {
-    dpi: 400, sensitivity: 1.51, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 2, ch_thickness: 0, ch_gap: -3, ch_alpha: 255,
-    ch_r: 250, ch_g: 250, ch_b: 250, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
-    volume: 0.4, voice_enable: 1
-  },
-  "device (Astralis)": {
-    dpi: 400, sensitivity: 2.0, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 2.5, ch_thickness: 0, ch_gap: -2, ch_alpha: 255,
-    ch_r: 0, ch_g: 255, ch_b: 0, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
-    volume: 0.4, voice_enable: 1
-  },
-  "donk (Spirit)": {
-    dpi: 800, sensitivity: 1.2, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-    ch_size: 2, ch_thickness: 0, ch_gap: -3, ch_alpha: 255,
-    ch_r: 255, ch_g: 255, ch_b: 255, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-    vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-    rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
-    volume: 0.4, voice_enable: 1
-  },
-       "Clean – lille crosshair": {
-        dpi: 800, sensitivity: 1.0, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-        ch_size: 2.5, ch_thickness: 0.8, ch_gap: -2, ch_alpha: 255,
-        ch_r: 0, ch_g: 255, ch_b: 170, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-        vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-        rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.025,
-        volume: 0.4, voice_enable: 1
-      },
-      "Dot – minimal": {
-        dpi: 800, sensitivity: 1.1, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-        ch_size: 1, ch_thickness: 0, ch_gap: -3, ch_alpha: 255,
-        ch_r: 255, ch_g: 255, ch_b: 255, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 1,
-        vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-        rate: 786432, cmdrate: 128, updaterate: 128, mixahead: 0.02,
-        volume: 0.4, voice_enable: 1
-      },
-      "Valve MM – 64 tick": {
-        dpi: 800, sensitivity: 1.0, zoom_sens: 1.0, m_rawinput: 1, m_mouseaccel: 0,
-        ch_size: 2.5, ch_thickness: 0.8, ch_gap: -2, ch_alpha: 255,
-        ch_r: 0, ch_g: 255, ch_b: 170, ch_outline: 1, ch_outline_thickness: 1, ch_dot: 0,
-        vm_fov: 68, vm_x: 2.5, vm_y: 0, vm_z: -1.5,
-        rate: 262144, cmdrate: 64, updaterate: 64, mixahead: 0.03,
-        volume: 0.4, voice_enable: 1
-      }
-    };
-    function populatePresets(){
-      const sel = $('preset-select');
-      sel.innerHTML = '';
-      Object.keys(PRESETS).forEach(name=>{
-        const opt = document.createElement('option');
-        opt.value = name; opt.textContent = name;
-        sel.appendChild(opt);
+    /* Import */
+    function importCfg(text){
+      const map=new Map(), other=[], known=['sensitivity','zoom_sensitivity_ratio_mouse','m_rawinput','m_mouseaccel','m_mouseaccel1','m_mouseaccel2',
+        'cl_crosshairsize','cl_crosshairthickness','cl_crosshairgap','cl_crosshairalpha','cl_crosshaircolor_r','cl_crosshaircolor_g','cl_crosshaircolor_b',
+        'cl_crosshair_drawoutline','cl_crosshair_outlinethickness','cl_crosshairdot',
+        'viewmodel_fov','viewmodel_offset_x','viewmodel_offset_y','viewmodel_offset_z',
+        'rate','cl_cmdrate','cl_updaterate','snd_mixahead','volume','voice_enable'];
+      String(text).split(/\r?\n/).forEach(l=>{
+        const t=l.trim(); if(!t||t.startsWith('//')) return;
+        const m=t.match(/^(\S+)\s+(.+)$/); if(!m) return;
+        const k=m[1]; const val=m[2].replace(/^"|"$/g,''); if(known.includes(k)) map.set(k,val); else other.push(t);
       });
-      if(sel.options.length) sel.selectedIndex = 0;
-    }
-    function applyPreset(name){
-      const p = PRESETS[name]; if(!p) return;
-      Object.entries(p).forEach(([k,v])=>{ if($(k)!=null) $(k).value = v; });
+      const get=(k)=>map.get(k);
+      if(get('sensitivity')) $('sensitivity').value=get('sensitivity');
+      if(get('zoom_sensitivity_ratio_mouse')) $('zoom_sens').value=get('zoom_sensitivity_ratio_mouse');
+      if(get('m_rawinput')) $('m_rawinput').value=get('m_rawinput');
+      const accel=get('m_mouseaccel') ?? get('m_mouseaccel1') ?? get('m_mouseaccel2'); if(accel!==undefined) $('m_mouseaccel').value=accel;
+      const idMap={cl_crosshairsize:'ch_size',cl_crosshairthickness:'ch_thickness',cl_crosshairgap:'ch_gap',cl_crosshairalpha:'ch_alpha',
+        cl_crosshaircolor_r:'ch_r',cl_crosshaircolor_g:'ch_g',cl_crosshaircolor_b:'ch_b',cl_crosshair_drawoutline:'ch_outline',
+        cl_crosshair_outlinethickness:'ch_outline_thickness',cl_crosshairdot:'ch_dot'};
+      Object.keys(idMap).forEach(k=>{ if(get(k)!=null && $(idMap[k])) $(idMap[k]).value=get(k); });
+      if(get('viewmodel_fov')) $('vm_fov').value=get('viewmodel_fov');
+      if(get('viewmodel_offset_x')) $('vm_x').value=get('viewmodel_offset_x');
+      if(get('viewmodel_offset_y')) $('vm_y').value=get('viewmodel_offset_y');
+      if(get('viewmodel_offset_z')) $('vm_z').value=get('viewmodel_offset_z');
+      if(get('rate')) $('rate').value=get('rate'); if(get('cl_cmdrate')) $('cmdrate').value=get('cl_cmdrate'); if(get('cl_updaterate')) $('updaterate').value=get('cl_updaterate');
+      if(get('snd_mixahead')) $('mixahead').value=get('snd_mixahead'); if(get('volume')) $('volume').value=get('volume'); if(get('voice_enable')) $('voice_enable').value=get('voice_enable');
+      if(other.length && $('custom')) $('custom').value=other.join('\n');
       updateEdpi(); saveState(); generateCfg();
     }
-    on('preset-apply', ()=> applyPreset($('preset-select').value));
+    const fileInput=$('file-import');
+    if(fileInput){ fileInput.addEventListener('change', e=>{ const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=>importCfg(String(r.result||'')); r.readAsText(f); }); }
 
-    /* ---------- INIT ---------- */
-    loadState();
-    populatePresets();
-    generateCfg();
-    updateAuthUI();
+    /* Presets */
+    const PRESETS={
+      "Clean – lille crosshair":{dpi:800,sensitivity:1.0,zoom_sens:1,m_rawinput:1,m_mouseaccel:0,ch_size:2.5,ch_thickness:0.8,ch_gap:-2,ch_alpha:255,ch_r:0,ch_g:255,ch_b:170,ch_outline:1,ch_outline_thickness:1,ch_dot:0,vm_fov:68,vm_x:2.5,vm_y:0,vm_z:-1.5,rate:786432,cmdrate:128,updaterate:128,mixahead:0.025,volume:0.4,voice_enable:1},
+      "Dot – minimal":{dpi:800,sensitivity:1.1,zoom_sens:1,m_rawinput:1,m_mouseaccel:0,ch_size:1,ch_thickness:0,ch_gap:-3,ch_alpha:255,ch_r:255,ch_g:255,ch_b:255,ch_outline:1,ch_outline_thickness:1,ch_dot:1,vm_fov:68,vm_x:2.5,vm_y:0,vm_z:-1.5,rate:786432,cmdrate:128,updaterate:128,mixahead:0.02,volume:0.4,voice_enable:1},
+      "Valve MM – 64 tick":{dpi:800,sensitivity:1.0,zoom_sens:1,m_rawinput:1,m_mouseaccel:0,ch_size:2.5,ch_thickness:0.8,ch_gap:-2,ch_alpha:255,ch_r:0,ch_g:255,ch_b:170,ch_outline:1,ch_outline_thickness:1,ch_dot:0,vm_fov:68,vm_x:2.5,vm_y:0,vm_z:-1.5,rate:262144,cmdrate:64,updaterate:64,mixahead:0.03,volume:0.4,voice_enable:1}
+    };
+    function populatePresets(){
+      const sel=$('preset-select'); if(!sel) return;
+      sel.innerHTML=''; Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+      if(sel.options.length) sel.selectedIndex=0;
+      const apply=$('preset-apply'); if(apply) apply.addEventListener('click', ()=>{ const p=PRESETS[sel.value]; if(!p) return; Object.entries(p).forEach(([k,v])=>{ if($(k)) $(k).value=v; }); updateEdpi(); saveState(); generateCfg(); });
+    }
+
+    /* Auth */
+    function bindAuth(){
+      on('btn-auth', ()=> $('auth-modal').classList.add('active'));
+      on('landing-signup', ()=> $('auth-modal').classList.add('active'));
+      on('landing-login', ()=> $('auth-modal').classList.add('active'));
+      on('auth-close', ()=> $('auth-modal').classList.remove('active'));
+
+      on('auth-signup', async ()=>{
+        const email=($('auth-email').value||'').trim();
+        const password=$('auth-password').value||'';
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ alert('Indtast gyldig email.'); return; }
+        if(password.length<6){ alert('Password mindst 6 tegn.'); return; }
+        const { error } = await sb.auth.signUp({ email, password });
+        if(error){ alert(error.message); return; }
+        $('auth-modal').classList.remove('active'); updateAuthUI();
+      });
+
+      on('auth-login', async ()=>{
+        const email=($('auth-email').value||'').trim();
+        const password=$('auth-password').value||'';
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if(error){ alert(error.message); return; }
+        $('auth-modal').classList.remove('active'); updateAuthUI();
+      });
+
+      on('auth-google', async ()=>{
+        const { error } = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo:window.location.origin } });
+        if(error){ alert(error.message); }
+      });
+
+      on('btn-logout', async ()=>{ await sb.auth.signOut(); updateAuthUI(); });
+    }
+
+    /* Init */
+    window.addEventListener('DOMContentLoaded', ()=>{
+      loadState(); populatePresets(); generateCfg(); updateAuthUI(); bindAuth();
+      fields.forEach(id=>{ const el=$(id); if(!el) return; el.addEventListener('input', ()=>{ if(id==='dpi'||id==='sensitivity') updateEdpi(); saveState(); }); });
+      const dl=$('btn-download-2'); if(dl) dl.addEventListener('click', ()=>download(generateCfg(),'autoexec.cfg'));
+      const gen=$('btn-generate-2'); if(gen) gen.addEventListener('click', ()=>{ generateCfg(); saveState(); });
+      const reset=$('btn-reset'); if(reset) reset.addEventListener('click', ()=>{ if(confirm('Nulstil alle felter?')){ localStorage.removeItem('cs2_cfg_state'); location.reload(); } });
+      on('btn-save-cloud', async ()=>{ const { data:{ user } } = await sb.auth.getUser(); if(!user){ $('auth-modal').classList.add('active'); return; }
+        const cfg=generateCfg(); const { error } = await sb.from('autoexecs').upsert({ user_id:user.id, cfg }, { onConflict:'user_id' }); if(error){ alert('Fejl ved gem: '+error.message); return; } alert('Gemt i skyen.'); });
+      on('btn-load-cloud', async ()=>{ const { data:{ user } } = await sb.auth.getUser(); if(!user){ $('auth-modal').classList.add('active'); return; }
+        const { data, error } = await sb.from('autoexecs').select('cfg').eq('user_id',user.id).single(); if(error){ alert('Intet fundet for din konto.'); return; }
+        importCfg(data?.cfg||''); alert('Indlæst fra skyen.'); });
+    });
   </script>
 </body>
 </html>
