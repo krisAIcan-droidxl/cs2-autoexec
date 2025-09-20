@@ -403,12 +403,25 @@
     on('landing-login', ()=> $('auth-modal').classList.add('active'));
     on('auth-close', ()=> $('auth-modal').classList.remove('active'));
     on('auth-signup', async ()=>{
-      const email=$('auth-email').value.trim();
-      const password=$('auth-password').value;
-      const { error } = await sb.auth.signUp({ email, password });
-      if(error){ alert(error.message); return; }
-      alert('Konto oprettet. Tjek evt. mail for verifikation.');
-      $('auth-modal').classList.remove('active'); updateAuthUI();
+  const email = $('auth-email').value.trim();
+  const password = $('auth-password').value;
+
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    alert('Indtast en gyldig email.');
+    return;
+  }
+  if (!password || password.length < 6) {
+    alert('Vælg et password på mindst 6 tegn.');
+    return;
+  }
+
+  const { error } = await sb.auth.signUp({ email, password });
+  if (error) { alert(error.message); return; }
+  alert('Konto oprettet. Tjek evt. mail for verifikation.');
+  $('auth-modal').classList.remove('active');
+  updateAuthUI();
+});
+
     });
     on('auth-login', async ()=>{
       const email=$('auth-email').value.trim();
