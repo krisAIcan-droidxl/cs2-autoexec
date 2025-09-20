@@ -398,11 +398,23 @@
     on('btn-load-cloud', loadCloud);
 
     // Auth modal bindings
-    on('btn-auth', ()=> $('auth-modal').classList.add('active'));
-    on('landing-signup', ()=> $('auth-modal').classList.add('active'));
-    on('landing-login', ()=> $('auth-modal').classList.add('active'));
-    on('auth-close', ()=> $('auth-modal').classList.remove('active'));
-    on('auth-signup', async ()=>{
+    function bindAuthButtons(){
+  on('btn-auth', ()=> $('auth-modal').classList.add('active'));
+  on('landing-signup', ()=> $('auth-modal').classList.add('active'));
+  on('landing-login', ()=> $('auth-modal').classList.add('active'));
+  on('auth-close', ()=> $('auth-modal').classList.remove('active'));
+}
+
+function init(){
+  // eksisterende init-kald flyttes herind
+  loadState?.();
+  populatePresets?.();
+  generateCfg?.();
+  updateAuthUI?.();
+  bindAuthButtons();
+}
+window.addEventListener('DOMContentLoaded', init);
+
   const email = $('auth-email').value.trim();
   const password = $('auth-password').value;
 
