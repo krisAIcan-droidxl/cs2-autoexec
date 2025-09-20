@@ -232,7 +232,10 @@
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return alert('Indtast gyldig email.');
       if(password.length<6) return alert('Password mindst 6 tegn.');
       const { error } = await sb.auth.signUp({ email, password });
-      if(error) return alert(error.message);
+      if(error){
+  alert(error.message);
+  return;
+}
       $('auth-modal').classList.remove('active');
       updateAuthUI();
     });
