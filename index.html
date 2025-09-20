@@ -419,6 +419,16 @@
     });
     on('btn-logout', async ()=>{ await sb.auth.signOut(); updateAuthUI(); });
 
+    // Google OAuth
+on('auth-google', async ()=>{
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin }
+  });
+  if(error){ alert(error.message); }
+});
+
+
     /* ---------- PRESETS (bruges under Mus & Sens) ---------- */
     const PRESETS = {
       "s1mple (BC.Game Esports)": {
