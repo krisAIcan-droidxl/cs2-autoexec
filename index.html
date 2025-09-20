@@ -204,9 +204,58 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const on = (id, handler)=>{ const el=$(id); if(el) el.onclick = handler; };
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const on = (id, fn)=>{ const el=$(id); if(el) el.addEventListener('click', fn); };
+
+  // Supabase client
+  const sb = window.supabase.createClient(
+    'https://fhrhpanpsfhqtpitkwvw.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZocmhwYW5wc2ZocXRwaXRrd3Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMjQ2NjMsImV4cCI6MjA3MzgwMDY2M30.byKWY3wd1I_7XVEn4BzZGUmSxlte_ewlCFFh8YLIy9E'
+  );
+
+  async function updateAuthUI(){
+    const { data:{ user } } = await sb.auth.getUser();
+    document.body.classList.toggle('authed', !!user);
+  }
+
+  // Auth modal
+  function bindAuthButtons(){
+    on('btn-auth', ()=> $('auth-modal').classList.add('active'));
+    on('landing-signup', ()=> $('auth-modal').classList.add('active'));
+    on('landing-login', ()=> $('auth-modal').classList.add('active'));
+    on('auth-close', ()=> $('auth-modal').classList.remove('active'));
+
+    on('auth-signup', async ()=>{
+      const email = ($('auth-email').value||'').trim();
+      const password = $('auth-password').value||'';
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return alert('Indtast gyldig email.');
+      if(password.length<6) return alert('Password mindst 6 tegn.');
+      const { error } = await sb.auth.signUp({ email, password });
+      if(error) return alert(error.message);
+      $('auth-modal').classList.remove('active');
+      updateAuthUI();
+    });
+
+    on('auth-login', async ()=>{
+      const email = ($('auth-email').value||'').trim();
+      const password = $('auth-password').value||'';
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) return alert(error.message);
+      $('auth-modal').classList.remove('active');
+      updateAuthUI();
+    });
+
+    on('btn-logout', async ()=>{ await sb.auth.signOut(); updateAuthUI(); });
+  }
+
+  function init(){
+    bindAuthButtons();
+    updateAuthUI();
+  }
+  window.addEventListener('DOMContentLoaded', init);
+</script>
+
 
     /* ---------- FELTER ---------- */
     const fields = [
